@@ -6,6 +6,11 @@
 # or one of the other keys in your ssh-agent, for this to work.
 
 ID_FILE="${HOME}/.ssh/id_rsa.pub"
+ID_DSA_FILE="${HOME}/.ssh/id_dsa.pub"
+if [ ! -r "${ID_FILE}" -a -r "${ID_DSA_FILE}" ]; then
+  # Default to RSA key if present. Use DSA if present and RSA not.
+  ID_FILE=${ID_DSA_FILE}
+fi
 
 if [ "-i" = "$1" ]; then
   shift
