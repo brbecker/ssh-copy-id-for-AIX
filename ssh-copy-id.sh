@@ -43,7 +43,14 @@ if [ "$#" -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   exit 1
 fi
 
-{ eval "$GET_ID" ; } | ssh $1 "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; if test -x /sbin/restorecon; then /sbin/restorecon .ssh .ssh/authorized_keys; fi" || exit 1
+{ eval "$GET_ID" ; } | ssh $1 "
+    umask 077;
+    test -d .ssh || mkdir .ssh;
+    cat >> .ssh/authorized_keys;
+    if test -x /sbin/restorecon; then
+      /sbin/restorecon .ssh .ssh/authorized_keys;
+    fi
+  " || exit 1
 
 cat <<EOF
 Now try logging into the machine, with "ssh '$1'", and check in:
