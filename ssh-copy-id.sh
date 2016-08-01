@@ -6,6 +6,11 @@
 # or one of the other keys in your ssh-agent, for this to work.
 
 ID_FILE="${HOME}/.ssh/id_rsa.pub"
+ID_DSA_FILE="${HOME}/.ssh/id_dsa.pub"
+if [ ! -r "${ID_FILE}" -a -r "${ID_DSA_FILE}" ]; then
+  # Default to RSA key if present. Use DSA if present and RSA not.
+  ID_FILE=${ID_DSA_FILE}
+fi
 
 if [ "-i" = "$1" ]; then
   shift
@@ -38,7 +43,14 @@ if [ "$#" -lt 1 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   exit 1
 fi
 
-{ eval "$GET_ID" ; } | ssh $1 "umask 077; test -d .ssh || mkdir .ssh ; cat >> .ssh/authorized_keys; test -x /sbin/restorecon && /sbin/restorecon .ssh .ssh/authorized_keys" || exit 1
+{ eval "$GET_ID" ; } | ssh $1 "
+    umask 077;
+    test -d .ssh || mkdir .ssh;
+    cat >> .ssh/authorized_keys;
+    if test -x /sbin/restorecon; then
+      /sbin/restorecon .ssh .ssh/authorized_keys;
+    fi
+  " || exit 1
 
 cat <<EOF
 Now try logging into the machine, with "ssh '$1'", and check in:
